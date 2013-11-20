@@ -31,18 +31,17 @@ public class SiteConfig {
 	private String siteName;
 	private String emailAddress;
 	private List<String> floors;
-	private Integer clientRefresh;
 	private boolean alert;
 	
 	public SiteConfig(){
 		
 	}
 	
-	public SiteConfig(String siteName,String emailAddress, List<String> floors, Integer refresh){
+	public SiteConfig(String siteName,String emailAddress, List<String> floors){
 		this.emailAddress = emailAddress;
 		this.siteName = siteName;
 		this.floors = floors;
-		this.clientRefresh = refresh;
+
 		this.alert = true;
 	}
 
@@ -83,14 +82,6 @@ public class SiteConfig {
 	
 	public void setEmailAddress(String emailAddress){
 		this.emailAddress = emailAddress;
-	}
-
-	public void setClientRefresh(Integer clientRefresh) {
-		this.clientRefresh = clientRefresh;
-	}
-
-	public Integer getClientRefresh() {
-		return clientRefresh;
 	}
 
 	public void setAlert(boolean alert) {
