@@ -79,18 +79,16 @@ public class SiteConfigResource {
 		List<String> floorsList = formParams.get("floors");
 		List<String> siteNameList = formParams.get("siteName");
 		List<String> emailAddressList = formParams.get("emailAddress");
-		List<String> clientRefresh = formParams.get("refresh");
 		List<String> alertList = formParams.get("alert");
 		
 		SiteConfig eConfig = SiteConfigDAO.instance.getModel().get(new Long(1));
 		if (eConfig==null){
-		    SiteConfig config = new SiteConfig(siteNameList.get(0),emailAddressList.get(0),floorsList,new Integer(clientRefresh.get(0)));
+		    SiteConfig config = new SiteConfig(siteNameList.get(0),emailAddressList.get(0),floorsList);
 		    SiteConfigDAO.instance.putSiteConfig(config);
 		} else {
 			eConfig.setSiteName(siteNameList.get(0));
 			eConfig.setEmailAddress(emailAddressList.get(0));
 			eConfig.setFloors(floorsList);
-			eConfig.setClientRefresh(new Integer(clientRefresh.get(0)));
 			
 			if(alertList!=null && alertList.get(0).equals("Alert")){
 				  eConfig.setAlert(true);

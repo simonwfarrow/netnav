@@ -7,7 +7,6 @@ var curFloor = "1"; // store which florr is currently selected
 var selectedDeviceId = 0; // store device id of the one the user selected from the tables
 var site = new Object; // store site config
 var tooltip; // text object for showing tooltip
-var refreshRate = 10000;// default refresh rate at 10 seconds
 var refreshIntervalObj; // store handle to refresh
 var offSelectedDevId = 0; // used to store which id was selected from the
 							// offline table, for updating the row colour
@@ -16,11 +15,25 @@ var floorSelectedDevId = 0; // used to store which id was selected from the
 var imgWidth = 750;
 var imgHeight = 458;
 
+//display dat.gui
+var Options = function() {
+	this.locked = true;
+	this.refresh = 15;
+};
+//global var to access dat.gui function attributes
+var opts = new Options();
+var gui = new dat.GUI();
+gui.add(opts, 'locked');
+refreshInt = gui.add(opts, 'refresh', 5,30).step(5);
+refreshInt.onChange(function(value) {
+	setRefresh(value);
+});
+
 
 // called from the settings modal when the refresh rate is changed
 function setRefresh(value) {
 	window.clearInterval(refreshIntervalObj);
-	refreshIntervalObj = window.setInterval(function() {refreshData(curFloor)}, value);
+	refreshIntervalObj = window.setInterval(function() {refreshData(curFloor)}, (value*1000));
 }
 
 // function to get device text object from map
@@ -61,6 +74,7 @@ function gethashFloor(which) {
 
 // functions for moving the image on the canvas
 var start = function() {
+	if (opts.locked) {return};
 	// storing original coordinates
 	this.ox = this.attr("x");
 	this.oy = this.attr("y");
@@ -72,15 +86,32 @@ var start = function() {
 	tooltip.remove();
 
 }, move = function(dx, dy) {
+	if (opts.locked) {return};
 	// move will be called with dx and dy
-	// restrict movement of circle to within boundaries
-
-	this.attr({
-		x : this.ox + dx,
-		y : this.oy + dy
-	});
-
+	// restrict movement of icon to within boundaries
+	var nx = this.ox+dx;
+	var ny = this.oy+dy;
+	if (nx<0){
+		this.attr({x:0});
+	} else if (nx>imgWidth) {
+		this.attr({x:(imgWidth-20)}); 
+	} else {
+		this.attr({x:nx});
+	}
+	if (ny<0){
+		this.attr({y:0});
+	} else if (ny>imgHeight) {
+		this.attr({y:(imgHeight-20)}); 
+	} else {
+		this.attr({y:ny});
+	}
+	//this.attr({
+	//	x : this.ox + dx,
+	//	y : this.oy + dy
+	//});
+		
 }, up = function() {
+	if (opts.locked) {return};
 	// restoring state
 	this.attr({
 		opacity : 1
@@ -159,7 +190,7 @@ function getOnlineDeviceCount(){
 
 // load the the data on page load
 function initialLoad() {
-
+	
 	// paper = Raphael(document.getElementById("floorPlans"),"100%", "100%");
 	paper = Raphael(document.getElementById("floorPlans"), imgWidth,imgHeight);
 
@@ -182,8 +213,8 @@ function initialLoad() {
 				hashFloors[i] = result.siteConfig.floors[i - 1];
 
 				// set the client refresh time
-				setRefresh(result.siteConfig.clientRefresh);
-
+				//replaced with dat.gui in v1.1 - 201113
+				//setRefresh(result.siteConfig.clientRefresh);
 				site = result.siteConfig;
 			}
 
@@ -236,12 +267,12 @@ function refreshData(floor) {
 					var offlineTable = document.getElementById("offlineDeviceTable");
 					var insert = '';
 					var insertOffline = '';
-
+					
 					$
 							.each(
 									result.device,
 									function(index, item) {
-
+			
 										// get previous device object
 										var existingDevice = gethashDevice(item.id);
 
@@ -658,22 +689,24 @@ $(document).on(
 		});
 
 $(document).on("click", ".open-AddDeviceModal", function() {
-
-	// add code to populate floor drop down
-	objSelect = document.getElementById("Afloors");
-	// remove all options before re-adding them
-	while (objSelect.length > 0) {
-		objSelect.remove(0);
-	}
-
-	for (floor in hashFloors) {
-		var option = document.createElement("option");
-		option.text = hashFloors[floor];
-		objSelect.add(option, null);
-	}
-
-	$('#addDeviceModal').modal('show');
-
+	
+	
+	
+		// add code to populate floor drop down
+		objSelect = document.getElementById("Afloors");
+		// remove all options before re-adding them
+		while (objSelect.length > 0) {
+			objSelect.remove(0);
+		}
+	
+		for (floor in hashFloors) {
+			var option = document.createElement("option");
+			option.text = hashFloors[floor];
+			objSelect.add(option, null);
+		}
+	
+		$('#addDeviceModal').modal('show');
+	
 });
 
 // script for opening site modal and passing in site data

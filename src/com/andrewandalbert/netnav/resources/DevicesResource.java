@@ -25,6 +25,7 @@ import com.andrewandalbert.netnav.model.Device;
 import com.andrewandalbert.netnav.model.Device.DEVICE_TYPE;
 import com.andrewandalbert.netnav.model.Log;
 import com.andrewandalbert.netnav.resources.DeviceResource;
+import com.andrewandalbert.netnav.server.NetNavServer;
 
 //Will map the resource to the URL devices
 @Path("/devices")
@@ -67,7 +68,7 @@ public class DevicesResource {
 	    return String.valueOf(count);
 	  }
 	  
-	  /* gets the count of offline devices*/
+	  /* gets the count of online devices*/
 	  @GET
 	  @Path("count/offline")
 	  @Produces(MediaType.TEXT_PLAIN)
@@ -107,26 +108,33 @@ public class DevicesResource {
 	  public void newDevice(MultivaluedMap<String, String> formParams,
 	      @Context HttpServletResponse servletResponse) throws IOException {
 		  
-		List<String> deviceNameList = formParams.get("deviceName");
-		List<String> ipList = formParams.get("ip");
-		List<String> deviceTypeList = formParams.get("deviceType");
-		List<String> floorList = formParams.get("floors");
-		List<String> alertList = formParams.get("alert");
-		boolean alert;
+		int count = DeviceDAO.instance.getModel().size();
+		String license = (String)NetNavServer.props.get("license");
+		if (count<Integer.valueOf(license)){ 
+		    
+			List<String> deviceNameList = formParams.get("deviceName");
+			List<String> ipList = formParams.get("ip");
+			List<String> deviceTypeList = formParams.get("deviceType");
+			List<String> floorList = formParams.get("floors");
+			List<String> alertList = formParams.get("alert");
+			boolean alert;
+			
+			if(alertList!=null && alertList.get(0).equals("Alert")){
+				  alert = true;
+			  } else {
+				  alert = false;
+			  }
+			
+		    Device device = new Device(deviceNameList.get(0),ipList.get(0),DEVICE_TYPE.valueOf(deviceTypeList.get(0)),floorList.get(0),alert);
 		
-		if(alertList!=null && alertList.get(0).equals("Alert")){
-			  alert = true;
-		  } else {
-			  alert = false;
-		  }
-		
-	    Device device = new Device(deviceNameList.get(0),ipList.get(0),DEVICE_TYPE.valueOf(deviceTypeList.get(0)),floorList.get(0),alert);
-	
-	    //DeviceDAO.instance.getModel().put(id, device);
-	    DeviceDAO.instance.putDevice(device);
-	    
-	    //try re-direct back to main page, as on iOS it stops on rest page
-	    servletResponse.sendRedirect("../index.html");
+		    //DeviceDAO.instance.getModel().put(id, device);
+		    DeviceDAO.instance.putDevice(device);
+		    
+		    //try re-direct back to main page, as on iOS it stops on rest page
+		    servletResponse.sendRedirect("../index.html");
+		} else {
+			System.out.println("LICENSE LIMITATION REACHED : " + license);
+		}
 	  }
 	  
 	  @Path("delete/{device}")
