@@ -28,6 +28,11 @@ public class  NetNavServer implements ServletContextListener{
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 		ses.shutdownNow();
+		try {
+			ses.awaitTermination(2, TimeUnit.MINUTES);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) {
