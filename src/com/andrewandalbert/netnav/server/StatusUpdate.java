@@ -17,15 +17,26 @@ import com.andrewandalbert.netnav.network.utils.NetworkUtilities;
 
 public class StatusUpdate extends Thread {
 
+	private boolean stop;
+	
 	public StatusUpdate(String str) {
 		super(str);
 	}
+	
+	
+	@Override
+	public void interrupt() {
+		super.interrupt();
+		stop = true;
+	}
+
+	@Override
 	public void run() {
 
 		List<Device> devices = new ArrayList<Device>();
 	    devices.addAll(DeviceDAO.instance.getModel().values());
 	    Iterator<Device> it = devices.iterator();
-	    while(it.hasNext()){
+	    while(it.hasNext() && !stop){
 	    	Device device = it.next();
 	  
 	    	//update device status by pinging
