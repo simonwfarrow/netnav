@@ -3,21 +3,26 @@ package com.andrewandalbert.netnav.server;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+@WebListener
 public class  NetNavServer implements ServletContextListener{
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 3577085834473772357L;
-	private static ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
+	private ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
+	private ScheduledFuture<?> future = null;
+	private StatusUpdate status = null;
 	public static Properties props;
 	
 	/**
@@ -27,7 +32,17 @@ public class  NetNavServer implements ServletContextListener{
 	}
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
+		System.out.println("SHUTTING DOWN SERVER");
+		status.interrupt();
+		future.cancel(true);
 		ses.shutdownNow();
+		try {
+			ses.awaitTermination(1, TimeUnit.MINUTES);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("TASK CANCELLED");
 	}
 	@Override
 	public void contextInitialized(ServletContextEvent arg0) {
@@ -49,9 +64,9 @@ public class  NetNavServer implements ServletContextListener{
 		}
 			
 		Integer interval = new Integer(scanInterval);
-		StatusUpdate status = new StatusUpdate("StatusUpdate");
+		status = new StatusUpdate("StatusUpdate");
 		status.setDaemon(true);
-		ses.scheduleAtFixedRate(status, 1, interval, TimeUnit.MINUTES);	
+		future = ses.scheduleAtFixedRate(status, 1, interval, TimeUnit.MINUTES);	
 		
 	}
 	
