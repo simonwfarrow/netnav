@@ -138,16 +138,28 @@ public class NetworkUtilities {
 	}
 	
 	public static String getUpTime(String ip){
+		
 		String uptime = "";
-		SnmpClient client;
+		SnmpClient client = null;
+		
 		try {
+			
 			client = new SnmpClient("udp:"+ip+"/161");
 			uptime = client.getAsString(new OID("1.3.6.1.2.1.1.3.0")); //uptime OID
-			client.stop();
+		
+		} catch (NullPointerException npe){
+			//do nothing, NPE thrown if no up-time received
+			
 		} catch (Exception e){
-			System.out.println(e.getMessage());
+			e.printStackTrace();
+			
+		} finally {
+			try {
+				client.stop();
+			} catch (Exception ioe){
+				ioe.printStackTrace();
+			}
 		}
-		client = null;
 		return uptime;
 	}
 }
