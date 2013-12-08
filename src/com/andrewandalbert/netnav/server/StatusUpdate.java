@@ -61,8 +61,11 @@ public class StatusUpdate extends Thread {
 	    	//TODO perform any other network checks here
 	    	
 	    	//update device uptime
-	    	device.setUptime(NetworkUtilities.getUpTime(device.getIpAddress()));
-	    	DeviceDAO.instance.updateDevice(device,null); //do not add log entry for uptime updates
+	    	String upTime = NetworkUtilities.getUpTime(device.getIpAddress());
+	    	if (!upTime.equals("")){
+	    		device.setUptime(upTime);
+	    		DeviceDAO.instance.updateDevice(device,null); //do not add log entry for uptime updates
+	    	}
 	    	
 	    	//if the status has changed update the device
 	    	if(!newStatus.equals(oldStatus)){
